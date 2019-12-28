@@ -12,7 +12,7 @@ namespace HttpRestApiConsole
             using (var client2 = new HttpRestApiClient("http://viacep.com.br/"))
             {
                 string cep = "03260000";
-                client2.Request = new HttpRestApiRequest($"ws/{cep}/json/");
+                client2.Request = HttpRestApiRequestFactory.Create($"ws/{cep}/json/");
 
                 var response2 = client2.GetAsync<ViaCepEndereco>();
 

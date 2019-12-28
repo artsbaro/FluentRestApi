@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,35 +13,35 @@ namespace HttpRestApi
 
         public HttpRestApiClient(string baseAddress)
         {
-            base.BaseAddress = new Uri(baseAddress);
-            this.Request = new HttpRestApiRequest();
+            BaseAddress = new Uri(baseAddress);
+            Request = new HttpRestApiRequest();
         }
 
         #region Get
-        public Task<HttpResponseMessage> Get()
+        public HttpResponseMessage Get()
         {
             AddAllHeaders();
-            return base.GetAsync(Request.Path);
+            return GetAsync(Request.Path).Result;
         }
 
         public T Get<T>()
         {
             AddAllHeaders();
-            var response = base.GetAsync(Request.Path).Result;
+            var response = GetAsync(Request.Path).Result;
             return JsonDeserializeObject<T>(response);
         }
 
         public async Task<HttpResponseMessage> GetAsync()
         {
             AddAllHeaders();
-            return await base.GetAsync(Request.Path)
+            return await GetAsync(Request.Path)
                 .ConfigureAwait(false);
         }
 
         public async Task<T> GetAsync<T>()
         {
             AddAllHeaders();
-            var response = await base.GetAsync(Request.Path)
+            var response = await GetAsync(Request.Path)
                 .ConfigureAwait(false);
             return await JsonDeserializeObjectAsync<T>(response)
                 .ConfigureAwait(false);
@@ -48,12 +49,12 @@ namespace HttpRestApi
         #endregion
 
         #region Post
-        public Task<HttpResponseMessage> Post(object httpContent)
+        public HttpResponseMessage Post(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
                 AddAllHeaders();
-                return base.PostAsync(Request.Path, content);
+                return PostAsync(Request.Path, content).Result;
             }
         }
 
@@ -67,7 +68,7 @@ namespace HttpRestApi
             }
         }
 
-        public async Task<T> PostAsync<T>(Object httpContent)
+        public async Task<T> PostAsync<T>(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -79,7 +80,7 @@ namespace HttpRestApi
             }
         }
 
-        public async Task<HttpResponseMessage> PostAsync(Object httpContent)
+        public async Task<HttpResponseMessage> PostAsync(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -92,12 +93,12 @@ namespace HttpRestApi
 
         #region Put
 
-        public Task<HttpResponseMessage> Put(Object httpContent)
+        public HttpResponseMessage Put(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
                 AddAllHeaders();
-                return PutAsync(Request.Path, content);
+                return PutAsync(Request.Path, content).Result;
             }
         }
 
@@ -106,12 +107,12 @@ namespace HttpRestApi
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
                 AddAllHeaders();
-                var response = base.PutAsync(Request.Path, content).Result;
+                var response = PutAsync(Request.Path, content).Result;
                 return JsonDeserializeObject<T>(response);
             }
         }
 
-        public async Task<T> PutAsync<T>(Object httpContent)
+        public async Task<T> PutAsync<T>(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -135,10 +136,10 @@ namespace HttpRestApi
         #endregion
 
         #region Delete
-        public Task<HttpResponseMessage> Delete(Uri requestUri)
+        public HttpResponseMessage Delete(Uri requestUri)
         {
             AddAllHeaders();
-            return base.DeleteAsync(requestUri);
+            return base.DeleteAsync(requestUri).Result;
         }
 
         public Task<HttpResponseMessage> Delete(string requestUri)
@@ -163,16 +164,16 @@ namespace HttpRestApi
         #endregion
 
         #region Patch
-        public Task<HttpResponseMessage> Patch(Object httpContent)
+        public HttpResponseMessage Patch(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
                 AddAllHeaders();
-                return base.PatchAsync(Request.Path, content);
+                return PatchAsync(Request.Path, content).Result;
             }
         }
 
-        public T Patch<T>(Object httpContent)
+        public T Patch<T>(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -182,7 +183,7 @@ namespace HttpRestApi
             }
         }
 
-        public async Task<T> PatchAsync<T>(Object httpContent)
+        public async Task<T> PatchAsync<T>(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -195,7 +196,7 @@ namespace HttpRestApi
             }
         }
 
-        public async Task<HttpResponseMessage> PatchAsync(Object httpContent)
+        public async Task<HttpResponseMessage> PatchAsync(object httpContent)
         {
             using (HttpContent content = JsonSerializeObject(httpContent))
             {
@@ -221,22 +222,31 @@ namespace HttpRestApi
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore })).ConfigureAwait(false);
         }
 
-        private HttpContent JsonSerializeObject(Object httpContent)
+        public static HttpContent JsonSerializeObject(object httpContent)
         {
-            if (httpContent == null)
-                return null;
-
-            return new StringContent(
-            JsonConvert.SerializeObject(httpContent),
-            Encoding.UTF8,
-            "application/json");
+            return httpContent == null
+                ? null
+                : new StringContent(
+                    JsonConvert.SerializeObject(httpContent),
+                    Encoding.UTF8,
+                    "application/json");
         }
 
         private void AddAllHeaders()
         {
             foreach (var header in Request.Headers)
             {
-                base.DefaultRequestHeaders.Add(header.Key, header.Value);
+                switch (header.TypeHeader)
+                {
+                    case TypeHeader.AuthorizationBasic:
+                    case TypeHeader.AuthorizationBearer:
+                        DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(header.Key, header.Value);
+                        break;
+                    case TypeHeader.DefaulHeader:
+                    default:
+                        DefaultRequestHeaders.Add(header.Key, header.Value);
+                        break;
+                }
             }
         }
         #endregion
