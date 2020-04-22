@@ -1,10 +1,73 @@
 ﻿using System;
+using System.Linq;
 using HttpRestApi;
 
 namespace HttpRestApiConsole
 {
     class Program
     {
+
+        //static void Main(string[] args)
+        //{
+
+        //    var result = generalizedGCD(5, new int[5] { 2,4,6,8,10});
+
+        //    Console.WriteLine(result);
+
+        //    //for (int i = 0; i < result.Length; i++)
+        //    //{
+        //    //    Console.Write($"{result[i]} ");
+        //    //}
+
+        //    Console.ReadKey();
+        //}
+
+
+        //public static int generalizedGCD(int num, int[] arr)
+        //{
+        //    var listNumber = arr.ToList().OrderBy(x=> x);
+
+        //    var number =  listNumber.LastOrDefault(x => x%num == 0);
+
+        //    return number/num;
+        //}
+        
+
+        //public static int[] cellCompete(int[] states, int days)
+        //{
+        //    int[] oldStates = (int[])states.Clone(); //new int[states.Length];
+
+        //    //for (int i = 0; i < states.Length; i++)
+        //    //    oldStates[i] = states[i];
+
+        //    for (int k = 0; k < days; k++)
+        //    {
+        //        for (int j = 1; j < oldStates.Length - 1; j++)
+        //        {
+        //            if ((oldStates[j - 1] == 1 && oldStates[j + 1] == 1) || (oldStates[j - 1] == 0 && oldStates[j + 1] == 0))
+        //                states[j] = 0;
+        //            else
+        //                states[j] = 1;
+        //        }
+
+        //        if (oldStates[1] == 0)
+        //            states[0] = 0;
+        //        else
+        //            states[0] = 1;
+
+        //        if (oldStates[6] == 0)
+        //            states[7] = 0;
+        //        else
+        //            states[7] = 1;
+
+        //        for (int i = 0; i < states.Length; i++)
+        //            oldStates[i] = states[i];
+        //    }
+
+        //    return states;
+
+        //}
+
         static void Main(string[] args)
         {
             // ViaCEp
